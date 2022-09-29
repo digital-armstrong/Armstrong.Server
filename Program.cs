@@ -6,6 +6,8 @@ namespace ArmstrongServer
   {
     public static void Main(string[] args)
     {
+      System.Console.WriteLine("ARMStrong Server  Copyright (C) 2022  Owlscatcher. This program comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.");
+
       var port = new ComPort();
 
       List<Channel> channels = new List<Channel>
