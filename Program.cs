@@ -6,7 +6,7 @@ namespace ArmstrongServer
   {
     public static void Main(string[] args)
     {
-      System.Console.WriteLine("ARMStrong Server  Copyright (C) 2022  Owlscatcher. This program comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.");
+      System.Console.WriteLine("ARMStrong Server  Copyright (C) 2022  Owlscatcher.\nThis program comes with ABSOLUTELY NO WARRANTY.\nThis is free software, and you are welcome to redistribute it under certain conditions.\n\n");
 
       var port = new ComPort();
 
