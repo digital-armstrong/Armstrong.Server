@@ -14,10 +14,6 @@ namespace ArmstrongServer.Models
 
       PortName = portConfig.PortName;
       BaudRate = portConfig.BaudRate;
-
-      System.Console.WriteLine($"Com-port Initialized successfully:\n" +
-                                $"\tPort Name:\t{this.PortName}\n" +
-                                $"\tBaud Rate:\t{this.BaudRate}\n\n");
     }
   }
 }
