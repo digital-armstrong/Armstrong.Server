@@ -9,7 +9,7 @@ namespace ArmstrongServer.Helpers
 
     public static void Convert(Channel channel)
     {
-      var type = channel.MeasurementType;
+      var type = channel.DeviceType;
       var coefficient = channel.ConvertCoefficient;
 
       channel.ImpulsesEventValue = ToImpulse(channel.ChannelBuffer);
