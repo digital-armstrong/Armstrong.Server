@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using ArmstrongServer.Helpers;
+using ArmstrongServer.Constants;
 
 namespace ArmstrongServer.Models
 {
@@ -65,6 +66,7 @@ namespace ArmstrongServer.Models
     public int EventCount { get; set; }
     [Column("error_count")]
     public int ErrorEventCount { get; set; }
+    public List<History> Histories { get; set; }
 
     [NotMapped]
     public Packages? Packages { get; set; }
@@ -75,23 +77,112 @@ namespace ArmstrongServer.Models
 
     public void Initialization()
     {
-      Packages = PackageHelper.GetPackages((byte)this.ChannelId);
+      this.Packages = PackageHelper.GetPackages((byte)this.ChannelId);
+      this.EventCount = 0;
+      this.ErrorEventCount = 0;
+      this.EventDateTime = EventDateTime = DateTime.UtcNow;
     }
 
     public void SendMessage(byte[] message)
     {
-      ComPortHelper.SendMessage(Port, message);
+      ComPortHelper.SendMessage(this.Port, message);
     }
 
     public void ReceiveMessage()
     {
-      ChannelBuffer = ComPortHelper.ReadMessage(Port);
+      ChannelBuffer = ComPortHelper.ReadMessage(this.Port);
     }
 
-    public void SaveEventValue()
+    public void SetEventCount(bool isSaved)
     {
-      UnitConverterHelper.Convert(this);
-      EventDateTime = DateTime.UtcNow;
+      switch (isSaved)
+      {
+        case true:
+          this.EventCount++;
+          this.ErrorEventCount = 0;
+          break;
+        case false:
+          this.ErrorEventCount++;
+          break;
+      }
+    }
+
+    public bool SaveEventValue()
+    {
+      if (this.ChannelBuffer.SequenceEqual(new byte[] { Bytes.CRC_ERROR })
+          || this.ChannelBuffer.SequenceEqual(new byte[] { Bytes.SEZE_ERROR }))
+        return false;
+
+      var impulses = UnitConverterHelper.ToImpulse(this.ChannelBuffer);
+
+      if (this.ImpulsesEventValue == impulses)
+        return false;
+      else
+      {
+        this.ImpulsesEventValue = impulses;
+
+        this.SystemEventValue = UnitConverterHelper.ToSystem(this.DeviceType,
+                                                             this.ConvertCoefficient,
+                                                             this.ImpulsesEventValue);
+        this.NotSystemEventValue = UnitConverterHelper.ToNotSystem(this.DeviceType,
+                                                                   this.SystemEventValue);
+
+        EventDateTime = DateTime.UtcNow;
+
+        return true;
+      }
+    }
+
+    public void StartOneshotDialogSession()
+    {
+      this.Port.Open();
+      this.SendMessage(this.Packages.Fetch);
+      Thread.Sleep(100);
+      this.ReceiveMessage();
+      var isSaved = this.SaveEventValue();
+      SetEventCount(isSaved);
+
+      if (isSaved)
+      {
+        Thread.Sleep(100);
+        this.SetLightAlert();
+      }
+
+      this.PrintChannelInfo();
+      Thread.Sleep(2300);
+      this.Port.Close();
+    }
+
+    public void SetLightAlert()
+    {
+      if (this.ChannelPowerState == PowerState.Off)
+        return;
+
+      if (this.SystemEventValue < this.PreEmgLimit)
+      {
+        this.ChannelState = AlertColors.Green;
+        SendMessage(this.Packages.LightAlert.Normal);
+        return;
+      }
+      else if (this.SystemEventValue >= this.PreEmgLimit && this.SystemEventValue < this.EmgLimit)
+      {
+        this.ChannelState = AlertColors.Yellow;
+        SendMessage(this.Packages.LightAlert.Warning);
+        return;
+      }
+      else
+      {
+        this.ChannelState = AlertColors.Red;
+        switch (this.ChannelSpecialControl)
+        {
+          case false:
+            SendMessage(this.Packages.LightAlert.Danger);
+            return;
+          case true:
+            SendMessage(this.Packages.LightAlert.SpecialSignal);
+            return;
+        }
+      }
     }
 
     public void PrintChannelInfo()
@@ -100,7 +191,9 @@ namespace ArmstrongServer.Models
                               $"Impulses: {this.ImpulsesEventValue}\t" +
                               $"System: {this.SystemEventValue.ToString("E3")}\t" +
                               $"NotSyste: {this.NotSystemEventValue.ToString("E3")}\t" +
-                              $"Date: {this.EventDateTime}");
+                              $"Date: {this.EventDateTime}\t" +
+                              $"Count: {this.EventCount}\t" +
+                              $"Error: {this.ErrorEventCount}");
     }
   }
 }

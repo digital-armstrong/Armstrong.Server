@@ -10,7 +10,8 @@ namespace ArmstrongServer
     public static void Main(string[] args)
     {
       SayHelloWorld.Say();
-
+      var context = new DataContext();
+      var channels = new List<Channel>();
       var config = SettingsHelper.GetConfiguration();
       var srvAttrConf = config.GetSection("ServerAttributes")
                               .Get<ServerAttributes>();
@@ -20,48 +21,31 @@ namespace ArmstrongServer
         Name = srvAttrConf.Name,
       };
 
-      List<Channel> channels = new List<Channel>();
-
-      using (var context = new DataContext())
+      channels = context.Channels.Where(c => c.ServerId == serverAttr.Id).ToList<Channel>();
+      foreach (var c in channels)
       {
-        channels = context.Channels.Where(c => c.ServerId == serverAttr.Id).ToList<Channel>();
-        foreach (var c in channels)
-        {
-          c.Initialization();
-        }
+        c.Initialization();
       }
 
       while (true)
       {
         foreach (var c in channels)
         {
-          c.Port.Open();
-          c.SendMessage(c.Packages.Fetch);
-          Thread.Sleep(200);
-          c.ReceiveMessage();
-          c.SaveEventValue();
-          c.PrintChannelInfo();
-          Thread.Sleep(1000);
-          c.Port.Close();
+          c.StartOneshotDialogSession();
         }
 
-        using (var context = new DataContext())
+        foreach (var c in channels)
         {
-          foreach (var c in channels)
+          var history = new History
           {
-            var history = new History
-            {
-              ChannelId = c.Id,
-              SystemEventValue = c.SystemEventValue,
-              EventDate = c.EventDateTime,
-            };
-            context.Histories.Add(history);
-          }
-          context.SaveChanges();
+            ChannelId = c.Id,
+            SystemEventValue = c.SystemEventValue,
+            EventDate = c.EventDateTime,
+          };
+          context.Histories.Add(history);
         }
-
+        context.SaveChanges();
       }
-
     }
   }
 }
