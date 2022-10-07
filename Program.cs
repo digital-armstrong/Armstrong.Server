@@ -36,13 +36,16 @@ namespace ArmstrongServer
 
         foreach (var c in channels)
         {
-          var history = new History
+          if (c.ErrorEventCount == 0)
           {
-            ChannelId = c.Id,
-            SystemEventValue = c.SystemEventValue,
-            EventDate = c.EventDateTime,
-          };
-          context.Histories.Add(history);
+            var history = new History
+            {
+              ChannelId = c.Id,
+              SystemEventValue = c.SystemEventValue,
+              EventDate = c.EventDateTime,
+            };
+            context.Histories.Add(history);
+          }
         }
         context.SaveChanges();
       }
