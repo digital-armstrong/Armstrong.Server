@@ -1,4 +1,7 @@
 ﻿using ArmstrongServer.Models;
+using ArmstrongServer.Data;
+using ArmstrongServer.Helpers;
+using Microsoft.Extensions.Configuration;
 
 namespace ArmstrongServer
 {
@@ -6,30 +9,45 @@ namespace ArmstrongServer
   {
     public static void Main(string[] args)
     {
-      System.Console.WriteLine("ARMStrong Server  Copyright (C) 2022  Owlscatcher.\nThis program comes with ABSOLUTELY NO WARRANTY.\nThis is free software, and you are welcome to redistribute it under certain conditions.\n\n");
-
-      var port = new ComPort();
-
-      List<Channel> channels = new List<Channel>
+      SayHelloWorld.Say();
+      var context = new DataContext();
+      var channels = new List<Channel>();
+      var config = SettingsHelper.GetConfiguration();
+      var srvAttrConf = config.GetSection("ServerAttributes")
+                              .Get<ServerAttributes>();
+      var serverAttr = new ServerAttributes
       {
-        new Channel(1, "ДК-100", port),
+        Id = srvAttrConf.Id,
+        Name = srvAttrConf.Name,
       };
+
+      channels = context.Channels.Where(c => c.ServerId == serverAttr.Id).ToList<Channel>();
+      foreach (var c in channels)
+      {
+        c.Initialization();
+      }
 
       while (true)
       {
-        port.Open();
+        foreach (var c in channels)
+        {
+          c.StartOneshotDialogSession();
+        }
 
         foreach (var c in channels)
         {
-          c.SendMessage(c.Packages.Fetch);
-          Thread.Sleep(200);
-          c.ReceiveMessage();
-          c.SaveEventValue();
-          c.PrintChannelInfo();
-          Thread.Sleep(1000);
+          if (c.ErrorEventCount == 0)
+          {
+            var history = new History
+            {
+              ChannelId = c.Id,
+              SystemEventValue = c.SystemEventValue,
+              EventDate = c.EventDateTime,
+            };
+            context.Histories.Add(history);
+          }
         }
-
-        port.Close();
+        context.SaveChanges();
       }
     }
   }
