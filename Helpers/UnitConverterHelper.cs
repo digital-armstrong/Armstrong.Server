@@ -7,17 +7,7 @@ namespace ArmstrongServer.Helpers
   {
     enum Type { EqualDoseRate = 1, GasesActivity, AerosolsActivity, ImpulsesPerSecond }
 
-    public static void Convert(Channel channel)
-    {
-      var type = channel.DeviceType;
-      var coefficient = channel.ConvertCoefficient;
-
-      channel.ImpulsesEventValue = ToImpulse(channel.ChannelBuffer);
-      channel.SystemEventValue = ToSystem(type, coefficient, channel.ImpulsesEventValue);
-      channel.NotSystemEventValue = ToNotSystem(type, channel.SystemEventValue);
-    }
-
-    static private double ToImpulse(byte[] message)
+    static public double ToImpulse(byte[] message)
     {
       double impulse = 0;
 
@@ -31,11 +21,11 @@ namespace ArmstrongServer.Helpers
       else
       {
         System.Console.WriteLine($"Com-port ERROR: {BitConverter.ToString(message)}");
-        return 0;
+        return impulse;
       }
     }
 
-    static private double ToSystem(int type, double coefficient, double impulse)
+    static public double ToSystem(int type, double coefficient, double impulse)
     {
       //BDMG coefficient = 1, BDGB coefficient = 0.0000019f, BDAS coefficient = 2.0592f;
 
@@ -53,7 +43,7 @@ namespace ArmstrongServer.Helpers
       }
     }
 
-    static private double ToNotSystem(int type, double value)
+    static public double ToNotSystem(int type, double value)
     {
       // Пересчет из мкЗв/ч в мкР/с и Бк/м.куб в Ки/л
       // 1 мкЗв/ч     = 27.777        мкР/с

@@ -15,7 +15,6 @@ namespace ArmstrongServer.Helpers
       }
 
       port.Write(message, 0, 8);
-      // System.Console.WriteLine($"Com-port: SEND [{BitConverter.ToString(message)}]");
     }
 
     public static byte[] ReadMessage(ComPort port)
@@ -34,8 +33,6 @@ namespace ArmstrongServer.Helpers
       {
         buffer[i] = (byte)port.ReadByte();
       }
-
-      //System.Console.WriteLine($"Com-port: RESP [{BitConverter.ToString(buffer)}]\n");
 
       if (VerifivationPackageHelper.IsVerified(buffer))
         return buffer;
