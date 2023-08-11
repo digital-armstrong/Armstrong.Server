@@ -1,19 +1,25 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System;
+using System.Collections.Generic;
 
-namespace ArmstrongServer.Models
+namespace ArmstrongServer.Models;
+
+public partial class History
 {
-  [Table("histories")]
-  public class History
-  {
-    [Key, Column("id")]
     public long Id { get; set; }
-    [Column("channel_id")]
-    public int ChannelId { get; set; }
-    public Channel Channel { get; set; }
-    [Column("event_value")]
-    public double SystemEventValue { get; set; }
-    [Column("event_date")]
-    public DateTime EventDate { get; set; }
-  }
+
+    public long ChannelId { get; set; }
+
+    public double? EventImpulseValue { get; set; }
+
+    public double? EventSystemValue { get; set; }
+
+    public double? EventNotSystemValue { get; set; }
+
+    public DateTime? EventDatetime { get; set; }
+
+    public DateTime CreatedAt { get; set; }
+
+    public DateTime UpdatedAt { get; set; }
+
+    public virtual Channel Channel { get; set; } = null!;
 }

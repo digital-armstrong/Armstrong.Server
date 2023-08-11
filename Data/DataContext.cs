@@ -7,21 +7,24 @@ namespace ArmstrongServer.Data
 {
   public class DataContext : DbContext
   {
-    public DbSet<Channel>? Channels { get; set; }
-    public DbSet<History>? Histories { get; set; }
+    // public DbSet<Channel>? Channels { get; set; }
+    // public DbSet<History>? Histories { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)
     {
-      var config = SettingsHelper.GetConfiguration();
-      var sqlConfig = config.GetSection("SqlConnectionSettings")
-                            .Get<SqlConnectionSettings>();
+      // var config = SettingsHelper.GetConfiguration();
+      // var sqlConfig = config.GetSection("SqlConnectionSettings")
+      //                       .Get<SqlConnectionSettings>();
       var connectionStringBuilder = new Npgsql.NpgsqlConnectionStringBuilder
       {
-        Host = sqlConfig.Host,
-        Username = sqlConfig.Username,
-        Password = sqlConfig.Password,
-        Database = sqlConfig.Database
+        Host = "localhost",
+        Port = 5432,
+        Username = "postgres",
+        Password = "postgres",
+        Database = "arms_webapp_development"
       };
+
+      Console.WriteLine(connectionStringBuilder.ConnectionString.ToString());
 
       options.UseNpgsql(connectionStringBuilder.ConnectionString);
     }
