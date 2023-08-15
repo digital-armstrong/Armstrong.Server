@@ -73,7 +73,7 @@ public partial class ArmsWebappDevelopmentContext : DbContext
       Database = sqlConfig.Database
     };
 
-    options.UseNpgsql(connectionStringBuilder.ConnectionString);
+    optionsBuilder.UseNpgsql(connectionStringBuilder.ConnectionString);
   }
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)

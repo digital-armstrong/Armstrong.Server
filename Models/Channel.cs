@@ -1,5 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using ArmstrongServer.Constants;
+using ArmstrongServer.Helpers;
 
 namespace ArmstrongServer.Models;
 
@@ -21,21 +22,21 @@ public partial class Channel
 
   public string? LocationDescription { get; set; }
 
-  public double? SelfBackground { get; set; }
+  public double SelfBackground { get; set; } = 1;
 
-  public double? PreEmergencyLimit { get; set; }
+  public double PreEmergencyLimit { get; set; }
 
-  public double? EmergencyLimit { get; set; }
+  public double EmergencyLimit { get; set; }
 
-  public double? Consumptiom { get; set; }
+  public double Consumptiom { get; set; }
 
-  public double? ConversionCoefficient { get; set; }
+  public double ConversionCoefficient { get; set; } = 1;
 
-  public double? EventSystemValue { get; set; }
+  public double EventSystemValue { get; set; } = 0;
 
-  public double? EventNotSystemValue { get; set; }
+  public double EventNotSystemValue { get; set; } = 0;
 
-  public double? EventImpulseValue { get; set; }
+  public double EventImpulseValue { get; set; } = 0;
 
   public DateTime? EventDatetime { get; set; }
 
@@ -69,13 +70,16 @@ public partial class Channel
   public ComPort Port { get; private set; } = new ComPort();
   [NotMapped]
   public byte[] ChannelBuffer { get; set; } = new byte[0];
+  [NotMapped]
+  public int DeviceType { get; set; }
 
   public void Initialization()
   {
     this.Packages = PackageHelper.GetPackages((byte)this.ChannelId);
     this.EventCount = 0;
     this.EventErrorCount = 0;
-    this.EventDateTime = EventDateTime = DateTime.UtcNow;
+    this.EventDatetime = EventDatetime = DateTime.UtcNow;
+    this.DeviceType = (int)Device.DeviceModel.MeasurementClass.ArmsDeviceType;
   }
 
   public void SendMessage(byte[] message)
@@ -116,13 +120,13 @@ public partial class Channel
     {
       this.EventImpulseValue = impulses;
 
-      this.SystemEventValue = UnitConverterHelper.ToSystem(this.DeviceType,
+      this.EventSystemValue = UnitConverterHelper.ToSystem(this.DeviceType,
                                                            this.ConversionCoefficient,
                                                            this.EventImpulseValue);
-      this.NotSystemEventValue = UnitConverterHelper.ToNotSystem(this.DeviceType,
-                                                                 this.SystemEventValue);
+      this.EventNotSystemValue = UnitConverterHelper.ToNotSystem(this.DeviceType,
+                                                                 this.EventSystemValue);
 
-      EventDateTime = DateTime.UtcNow;
+      EventDatetime = DateTime.UtcNow;
 
       return true;
     }
@@ -150,25 +154,25 @@ public partial class Channel
 
   public void SetLightAlert()
   {
-    if (this.ChannelPowerState == PowerState.Off)
+    if (this.IsOnline == PowerState.Off)
       return;
 
-    if (this.SystemEventValue < this.PreEmgLimit)
+    if (this.EventSystemValue < this.PreEmergencyLimit)
     {
-      this.ChannelState = AlertColors.Green;
+      this.State = ChannelState.Normal;
       SendMessage(this.Packages.LightAlert.Normal);
       return;
     }
-    else if (this.SystemEventValue >= this.PreEmgLimit && this.SystemEventValue < this.EmgLimit)
+    else if (this.EventSystemValue >= this.PreEmergencyLimit && this.EventSystemValue < this.EmergencyLimit)
     {
-      this.ChannelState = AlertColors.Yellow;
+      this.State = ChannelState.Warning;
       SendMessage(this.Packages.LightAlert.Warning);
       return;
     }
     else
     {
-      this.ChannelState = AlertColors.Red;
-      switch (this.ChannelSpecialControl)
+      this.State = ChannelState.Danger;
+      switch (this.IsSpecialControl)
       {
         case false:
           SendMessage(this.Packages.LightAlert.Danger);
@@ -182,12 +186,12 @@ public partial class Channel
 
   public void PrintChannelInfo()
   {
-    System.Console.WriteLine($"Name: {this.ChannelName}\t" +
-                            $"Impulses: {this.ImpulsesEventValue}\t" +
-                            $"System: {this.SystemEventValue.ToString("E3")}\t" +
-                            $"NotSyste: {this.NotSystemEventValue.ToString("E3")}\t" +
-                            $"Date: {this.EventDateTime}\t" +
+    System.Console.WriteLine($"Name: {this.Name}\t" +
+                            $"Impulses: {this.EventImpulseValue}\t" +
+                            $"System: {this.EventSystemValue:E3}\t" +
+                            $"NotSyste: {this.EventNotSystemValue:E3}\t" +
+                            $"Date: {this.EventDatetime}\t" +
                             $"Count: {this.EventCount}\t" +
-                            $"Error: {this.ErrorEventCount}");
+                            $"Error: {this.EventErrorCount}");
   }
 }
