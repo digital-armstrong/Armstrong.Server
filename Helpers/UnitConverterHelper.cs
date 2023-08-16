@@ -56,7 +56,7 @@ namespace ArmstrongServer.Helpers
       {
         case (int)Type.EqualDoseRate: return value * roentgen;                // type: 1  БДМГ    мкЗв/ч
         case (int)Type.GasesActivity: return value / curie;                   // type: 2  БДГБ    Бк/м³
-        case (int)Type.AerosolsActivity: return value / curie;                   // type: 3  БДАС    Бк/м³
+        case (int)Type.AerosolsActivity: return value / curie;                // type: 3  БДАС    Бк/м³
         default: return value;
       }
     }

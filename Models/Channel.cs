@@ -79,7 +79,6 @@ public partial class Channel
     this.EventCount = 0;
     this.EventErrorCount = 0;
     this.EventDatetime = EventDatetime = DateTime.UtcNow;
-    this.DeviceType = (int)Device.DeviceModel.MeasurementClass.ArmsDeviceType; //this is not working
   }
 
   public void SendMessage(byte[] message)
