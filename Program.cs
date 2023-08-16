@@ -2,6 +2,7 @@
 using ArmstrongServer.Data;
 using ArmstrongServer.Helpers;
 using Microsoft.Extensions.Configuration;
+using Microsoft.EntityFrameworkCore;
 
 namespace ArmstrongServer
 {
@@ -9,6 +10,27 @@ namespace ArmstrongServer
   {
     public static void Main(string[] args)
     {
+      var context = new ArmsWebappDevelopmentContext();
+      var channels = new List<Channel>();
+
+      channels = context
+        .Channels
+        .Include(x => x.Device.DeviceModel)
+        .Include(x => x.Room)
+        .Include(x => x.Device.DeviceModel.MeasurementClass)
+        .ToList();
+
+      foreach (Channel ch in channels)
+      {
+        ch.DeviceType = ch.Device.DeviceModel.MeasurementClass.ArmsDeviceType; // It's really wrong choice
+
+        if (ch.Device.TabelId == 35)
+        {
+          Console.WriteLine($"Id: {ch.Id} \tName: {ch.Name}\tLocation: {ch.Room.Name}\tTabelId: {ch.Device.TabelId}\tDeviceType: {ch.DeviceType}\n");
+          Console.WriteLine($"Device: {ch.Device.DeviceModel.Name}");
+        }
+      }
+
       //   SayHelloWorld.Say();
       //   var context = new DataContext();
       //   var channels = new List<Channel>();
