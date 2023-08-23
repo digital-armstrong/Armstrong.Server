@@ -13,8 +13,6 @@ namespace ArmstrongServer
       SayHelloWorld.Say();
 
       var context = new ArmsWebappDevelopmentContext();
-      var channels = new List<Channel>();
-
       var config = SettingsHelper.GetConfiguration();
       var srvAttrConf = config.GetSection("ServerAttributes")
                               .Get<ServerAttributes>();
@@ -24,19 +22,19 @@ namespace ArmstrongServer
         Name = srvAttrConf.Name,
       };
 
-      channels = context
-        .Channels.Where(c => c.ServiceId == serverAttr.Id)
+      var channels = context
+        .Channels.Where(c => c.ServerId == serverAttr.Id)
         .Include(x => x.Device.DeviceModel).Include(x => x.Room).Include(x => x.Device.DeviceModel.MeasurementClass)
-        .ToList();
+        .OrderBy(x => x.ChannelId);
 
-      Console.WriteLine("ID\tName\tLocation\tDeviceType\n");
+      Console.WriteLine("ID\tSrv\tCh\tName\tLocation\tDeviceType\n");
 
       foreach (Channel ch in channels)
       {
         ch.Initialization();
         ch.DeviceType = ch.Device.DeviceModel.MeasurementClass.ArmsDeviceType; // It's really wrong choice
 
-        Console.WriteLine($"{ch.Id}\t{ch.Name}\t{ch.Room.Name}\t{ch.DeviceType}\n");
+        Console.WriteLine($"{ch.Id}\t{ch.ServerId}\t{ch.ChannelId}\t{ch.Name}\t{ch.Room.Name}\t{ch.DeviceType}\n");
       }
 
       while (true)
@@ -64,11 +62,7 @@ namespace ArmstrongServer
           }
         }
 
-        // NOTE: If Histories = 0 then app throws exception
-        // Cannot write DateTime with Kind=UTC to PostgreSQL type
-        // 'timestamp without time zone', consider using 'timestamp with time zone'.
-        if (context.Histories.Count() > 0)
-          context.SaveChanges();
+        context.SaveChanges();
       }
     }
   }

@@ -183,7 +183,8 @@ public partial class Channel
 
   public void PrintChannelInfo()
   {
-    System.Console.WriteLine($"Name: {this.Name}\t" +
+    System.Console.WriteLine($"Id: {this.ChannelId}\t" +
+                            $"Name: {this.Name}\t" +
                             $"Impulses: {this.EventImpulseValue}\t" +
                             $"System: {this.EventSystemValue:E3}\t" +
                             $"NotSyste: {this.EventNotSystemValue:E3}\t" +

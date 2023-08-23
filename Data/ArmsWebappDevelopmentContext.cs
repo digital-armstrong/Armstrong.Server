@@ -147,7 +147,6 @@ public partial class ArmsWebappDevelopmentContext : DbContext
               .HasDefaultValueSql("0.0")
               .HasColumnName("conversion_coefficient");
       entity.Property(e => e.CreatedAt)
-              .HasColumnType("timestamp(6) without time zone")
               .HasColumnName("created_at");
       entity.Property(e => e.DeviceId).HasColumnName("device_id");
       entity.Property(e => e.EmergencyLimit)
@@ -157,7 +156,6 @@ public partial class ArmsWebappDevelopmentContext : DbContext
               .HasDefaultValueSql("0")
               .HasColumnName("event_count");
       entity.Property(e => e.EventDatetime)
-              .HasColumnType("timestamp(6) without time zone")
               .HasColumnName("event_datetime");
       entity.Property(e => e.EventErrorCount)
               .HasDefaultValueSql("0")
@@ -193,7 +191,6 @@ public partial class ArmsWebappDevelopmentContext : DbContext
               .HasColumnType("character varying")
               .HasColumnName("state");
       entity.Property(e => e.UpdatedAt)
-              .HasColumnType("timestamp(6) without time zone")
               .HasColumnName("updated_at");
 
       entity.HasOne(d => d.Device).WithMany(p => p.Channels)
@@ -437,18 +434,12 @@ public partial class ArmsWebappDevelopmentContext : DbContext
 
       entity.Property(e => e.Id).HasColumnName("id");
       entity.Property(e => e.ChannelId).HasColumnName("channel_id");
-      entity.Property(e => e.CreatedAt)
-              .HasColumnType("timestamp(6) without time zone")
-              .HasColumnName("created_at");
-      entity.Property(e => e.EventDatetime)
-              .HasColumnType("timestamp(6) without time zone")
-              .HasColumnName("event_datetime");
+      entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+      entity.Property(e => e.EventDatetime).HasColumnName("event_datetime");
       entity.Property(e => e.EventImpulseValue).HasColumnName("event_impulse_value");
       entity.Property(e => e.EventNotSystemValue).HasColumnName("event_not_system_value");
       entity.Property(e => e.EventSystemValue).HasColumnName("event_system_value");
-      entity.Property(e => e.UpdatedAt)
-              .HasColumnType("timestamp(6) without time zone")
-              .HasColumnName("updated_at");
+      entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
 
       entity.HasOne(d => d.Channel).WithMany(p => p.Histories)
               .HasForeignKey(d => d.ChannelId)
