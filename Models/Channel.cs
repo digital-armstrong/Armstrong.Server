@@ -93,16 +93,13 @@ public partial class Channel
 
   public void SetEventCount(bool isSaved)
   {
-    switch (isSaved)
+    if (isSaved)
     {
-      case true:
-        this.EventCount++;
-        this.EventErrorCount = 0;
-        break;
-      case false:
-        this.EventErrorCount++;
-        break;
+      this.EventCount++;
+      this.EventErrorCount = 0;
     }
+    else
+      this.EventErrorCount++;
   }
 
   public bool SaveEventValue()
@@ -126,6 +123,7 @@ public partial class Channel
                                                                  this.EventSystemValue);
 
       EventDatetime = DateTime.UtcNow;
+      UpdatedAt = DateTime.UtcNow;
 
       return true;
     }

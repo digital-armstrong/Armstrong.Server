@@ -25,7 +25,7 @@ namespace ArmstrongServer
       };
 
       channels = context
-        .Channels
+        .Channels.Where(c => c.ServiceId == serverAttr.Id)
         .Include(x => x.Device.DeviceModel).Include(x => x.Room).Include(x => x.Device.DeviceModel.MeasurementClass)
         .ToList();
 
@@ -38,8 +38,6 @@ namespace ArmstrongServer
 
         Console.WriteLine($"{ch.Id}\t{ch.Name}\t{ch.Room.Name}\t{ch.DeviceType}\n");
       }
-
-      //   channels = context.Channels.Where(c => c.ServerId == serverAttr.Id).ToList<Channel>();
 
       while (true)
       {
@@ -56,12 +54,21 @@ namespace ArmstrongServer
             {
               ChannelId = c.Id,
               EventSystemValue = c.EventSystemValue,
+              EventNotSystemValue = c.EventNotSystemValue,
+              EventImpulseValue = c.EventImpulseValue,
               EventDatetime = c.EventDatetime,
+              UpdatedAt = c.UpdatedAt,
+              CreatedAt = DateTime.UtcNow
             };
             context.Histories.Add(history);
           }
         }
-        context.SaveChanges();
+
+        // NOTE: If Histories = 0 then app throws exception
+        // Cannot write DateTime with Kind=UTC to PostgreSQL type
+        // 'timestamp without time zone', consider using 'timestamp with time zone'.
+        if (context.Histories.Count() > 0)
+          context.SaveChanges();
       }
     }
   }
