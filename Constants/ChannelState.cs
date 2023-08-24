@@ -2,9 +2,10 @@ namespace ArmstrongServer.Constants
 {
   public static class ChannelState
   {
-    public static string Normal => "normal";
-    public static string Warning => "warning";
-    public static string Danger => "danger";
-    public static string LineDown => "line_down";
+    public const string Normal = "normal";
+    public const string Warning = "warning";
+    public const string Danger = "danger";
+    public const string LineDown = "line_down";
+    public const string Offline = "offline";
   }
 }

@@ -2,6 +2,11 @@ namespace ArmstrongServer.Helpers
 {
   public static class VerifivationPackageHelper
   {
+    /// <summary>
+    /// Checks if the package CRC16 control sum is valid
+    /// </summary>
+    /// <param name="message">8 byte package</param>
+    /// <returns>Compare result</returns>
     public static bool IsVerified(byte[] message)
     {
       var receivedCrc = new byte[2];
@@ -14,12 +19,18 @@ namespace ArmstrongServer.Helpers
       return diff == 0;
     }
 
+    // TODO: Refactor this
     public static byte[] GetCrc16(byte[] message)
     {
       var crc = CalculateCrc16(message);
       return crc;
     }
 
+    /// <summary>
+    /// Added to the message CRC16 control sum
+    /// </summary>
+    /// <param name="message">8 byte package</param>
+    /// <returns>8 byte array with CRC16 control sum</returns>
     public static byte[] GetVerifiedPackage(byte[] message)
     {
       var crc = CalculateCrc16(message);
@@ -31,6 +42,11 @@ namespace ArmstrongServer.Helpers
       return vMessage;
     }
 
+    /// <summary>
+    /// Calculates the CRC16 value of a 8 byte message
+    /// </summary>
+    /// <param name="message">8 byte package</param>
+    /// <returns>Two byte array</returns>
     private static byte[] CalculateCrc16(byte[] message)
     {
       var CRC = new byte[2];

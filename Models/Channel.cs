@@ -46,7 +46,7 @@ public partial class Channel
 
   public bool? IsSpecialControl { get; set; }
 
-  public bool? IsOnline { get; set; }
+  public bool IsOnline { get; set; }
 
   public string? State { get; set; }
 
@@ -122,8 +122,8 @@ public partial class Channel
       this.EventNotSystemValue = UnitConverterHelper.ToNotSystem(this.DeviceType,
                                                                  this.EventSystemValue);
 
-      EventDatetime = DateTime.UtcNow;
-      UpdatedAt = DateTime.UtcNow;
+      this.EventDatetime = DateTime.UtcNow;
+      this.UpdatedAt = DateTime.UtcNow;
 
       return true;
     }
@@ -138,6 +138,8 @@ public partial class Channel
     var isSaved = this.SaveEventValue();
     SetEventCount(isSaved);
 
+    this.State = PackageProcessing.GetChannelState(this);
+
     if (isSaved)
     {
       Thread.Sleep(100);
@@ -151,33 +153,29 @@ public partial class Channel
 
   public void SetLightAlert()
   {
-    if (this.IsOnline == PowerState.Off)
+    if (this.IsOnline == PowerState.Off || this.State == ChannelState.LineDown)
       return;
 
-    if (this.EventSystemValue < this.PreEmergencyLimit)
+    switch (this.State)
     {
-      this.State = ChannelState.Normal;
-      SendMessage(this.Packages.LightAlert.Normal);
-      return;
-    }
-    else if (this.EventSystemValue >= this.PreEmergencyLimit && this.EventSystemValue < this.EmergencyLimit)
-    {
-      this.State = ChannelState.Warning;
-      SendMessage(this.Packages.LightAlert.Warning);
-      return;
-    }
-    else
-    {
-      this.State = ChannelState.Danger;
-      switch (this.IsSpecialControl)
-      {
-        case false:
-          SendMessage(this.Packages.LightAlert.Danger);
-          return;
-        case true:
-          SendMessage(this.Packages.LightAlert.SpecialSignal);
-          return;
-      }
+      case ChannelState.Normal:
+        SendMessage(this.Packages.LightAlert.Normal);
+        break;
+      case ChannelState.Warning:
+        SendMessage(this.Packages.LightAlert.Warning);
+        break;
+      case ChannelState.Danger:
+        switch (this.IsSpecialControl)
+        {
+          case false:
+            SendMessage(this.Packages.LightAlert.Danger);
+            return;
+          case true:
+            SendMessage(this.Packages.LightAlert.SpecialSignal);
+            return;
+        }
+        break;
+
     }
   }
 
@@ -190,6 +188,7 @@ public partial class Channel
                             $"NotSyste: {this.EventNotSystemValue:E3}\t" +
                             $"Date: {this.EventDatetime}\t" +
                             $"Count: {this.EventCount}\t" +
-                            $"Error: {this.EventErrorCount}");
+                            $"Error: {this.EventErrorCount}\t" +
+                            $"State: {this.State}");
   }
 }
