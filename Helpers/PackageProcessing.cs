@@ -17,10 +17,11 @@ namespace ArmstrongServer.Helpers
       var emgLimit = channel.EmergencyLimit;
       var isOnline = channel.IsOnline;
       var errorCount = channel.EventErrorCount;
+      var errorLimit = 60;
 
       if (isOnline)
       {
-        if (errorCount < 2)
+        if (errorCount < errorLimit)
         {
           if (systemValue < preEmgLimit)
             return ChannelState.Normal;
