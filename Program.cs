@@ -1,7 +1,6 @@
 ﻿using ArmstrongServer.Models;
 using ArmstrongServer.Data;
 using ArmstrongServer.Helpers;
-using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
 
 namespace ArmstrongServer
@@ -10,31 +9,27 @@ namespace ArmstrongServer
   {
     public static void Main(string[] args)
     {
+      AppSettings.Initialization();
+
       SayHelloWorld.Say();
 
       var context = new ArmsWebappDevelopmentContext();
-      var config = SettingsHelper.GetConfiguration();
-      var srvAttrConf = config.GetSection("ServerAttributes")
-                              .Get<ServerAttributes>();
-      var serverAttr = new ServerAttributes
-      {
-        Id = srvAttrConf.Id,
-        Name = srvAttrConf.Name,
-      };
 
       var channels = context
-        .Channels.Where(c => c.ServerId == serverAttr.Id)
+        .Channels.Where(c => c.ServerId == AppSettings.AppServerAttributes.Id)
         .Include(x => x.Device.DeviceModel).Include(x => x.Room).Include(x => x.Device.DeviceModel.MeasurementClass)
         .OrderBy(x => x.ChannelId);
 
-      Console.WriteLine("ID\tSrv\tCh\tName\tLocation\tDeviceType\n");
+      var channelsCount = channels.Count();
+      var summPollingPortOverhead = channelsCount * AppSettings.AppPortSettings.DeadPollingTime * 2;
+      var realPollingTimeout = AppSettings.AppGeneralSettings.ChannelPolingTimeout > summPollingPortOverhead
+        ? (int)(AppSettings.AppGeneralSettings.ChannelPolingTimeout - summPollingPortOverhead)
+        : AppSettings.AppPortSettings.MinimalPollingTimeout;
 
       foreach (Channel ch in channels)
       {
         ch.Initialization();
         ch.DeviceType = ch.Device.DeviceModel.MeasurementClass.ArmsDeviceType; // It's really wrong choice
-
-        Console.WriteLine($"{ch.Id}\t{ch.ServerId}\t{ch.ChannelId}\t{ch.Name}\t{ch.Room.Name}\t{ch.DeviceType}\n");
       }
 
       while (true)
@@ -63,6 +58,7 @@ namespace ArmstrongServer
         }
 
         context.SaveChanges();
+        Thread.Sleep(realPollingTimeout);
       }
     }
   }

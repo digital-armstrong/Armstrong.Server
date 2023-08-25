@@ -72,13 +72,18 @@ public partial class Channel
   public byte[] ChannelBuffer { get; set; } = new byte[0];
   [NotMapped]
   public int? DeviceType { get; set; }
-
+  [NotMapped]
+  public int ErrorCountLimit { get; private set; }
+  [NotMapped]
+  public int DeadPollingTime { get; set; }
   public void Initialization()
   {
     this.Packages = PackageHelper.GetPackages((byte)this.ChannelId);
     this.EventCount = 0;
     this.EventErrorCount = 0;
     this.EventDatetime = EventDatetime = DateTime.UtcNow;
+    this.ErrorCountLimit = AppSettings.AppGeneralSettings.ChannelPollingErrorCountLimit;
+    this.DeadPollingTime = AppSettings.AppPortSettings.DeadPollingTime;
   }
 
   public void SendMessage(byte[] message)
@@ -102,6 +107,34 @@ public partial class Channel
       this.EventErrorCount++;
   }
 
+  /// <summary>
+  /// Get string statements for channel following measurement values
+  /// </summary>
+  /// <param name="channel">Channel object</param>
+  /// <returns>String state value</returns>
+  public string SetChannelStatus()
+  {
+    if (this.IsOnline)
+    {
+      if (this.EventErrorCount < ErrorCountLimit)
+      {
+        if (this.EventSystemValue < this.PreEmergencyLimit)
+          return ChannelState.Normal;
+        else if (this.EventSystemValue >= this.PreEmergencyLimit && this.EventSystemValue < EmergencyLimit)
+          return ChannelState.Warning;
+        else
+          return ChannelState.Danger;
+      }
+      else
+      {
+        return ChannelState.LineDown;
+      }
+    }
+    else
+    {
+      return ChannelState.Offline;
+    }
+  }
   public bool SaveEventValue()
   {
     if (this.ChannelBuffer.SequenceEqual(new byte[] { Bytes.CRC_ERROR })
@@ -133,21 +166,20 @@ public partial class Channel
   {
     this.Port.Open();
     this.SendMessage(this.Packages.Fetch);
-    Thread.Sleep(100);
+    Thread.Sleep(DeadPollingTime);
     this.ReceiveMessage();
     var isSaved = this.SaveEventValue();
     SetEventCount(isSaved);
 
-    this.State = PackageProcessing.GetChannelState(this);
+    this.State = SetChannelStatus();
 
     if (isSaved)
     {
-      Thread.Sleep(100);
+      Thread.Sleep(DeadPollingTime);
       this.SetLightAlert();
     }
 
     this.PrintChannelInfo();
-    Thread.Sleep(2300);
     this.Port.Close();
   }
 

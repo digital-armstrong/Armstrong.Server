@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using ArmstrongServer.Models;
-using ArmstrongServer.Helpers;
-using Microsoft.Extensions.Configuration;
 
-namespace ArmstrongServer.Models;
+namespace ArmstrongServer.Data;
 
 public partial class ArmsWebappDevelopmentContext : DbContext
 {
@@ -62,15 +58,12 @@ public partial class ArmsWebappDevelopmentContext : DbContext
 
   protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
   {
-    var config = SettingsHelper.GetConfiguration();
-    var sqlConfig = config.GetSection("SqlConnectionSettings")
-                          .Get<SqlConnectionSettings>();
     var connectionStringBuilder = new Npgsql.NpgsqlConnectionStringBuilder
     {
-      Host = sqlConfig.Host,
-      Username = sqlConfig.Username,
-      Password = sqlConfig.Password,
-      Database = sqlConfig.Database
+      Host = AppSettings.AppSqlConnectionSettings.Host,
+      Username = AppSettings.AppSqlConnectionSettings.Username,
+      Password = AppSettings.AppSqlConnectionSettings.Password,
+      Database = AppSettings.AppSqlConnectionSettings.Database
     };
 
     optionsBuilder.UseNpgsql(connectionStringBuilder.ConnectionString);
