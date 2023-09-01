@@ -1,179 +1,203 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using ArmstrongServer.Helpers;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 using ArmstrongServer.Constants;
+using ArmstrongServer.Helpers;
 
-namespace ArmstrongServer.Models
+namespace ArmstrongServer.Models;
+
+public partial class Channel
 {
-  [Table("channels")]
-  public class Channel
+  public long Id { get; set; }
+
+  public string? Name { get; set; }
+
+  public int? ChannelId { get; set; }
+
+  public long DeviceId { get; set; }
+
+  public long RoomId { get; set; }
+
+  public long ServerId { get; set; }
+
+  public long ServiceId { get; set; }
+
+  public string? LocationDescription { get; set; }
+
+  public double SelfBackground { get; set; } = 1;
+
+  public double PreEmergencyLimit { get; set; }
+
+  public double EmergencyLimit { get; set; }
+
+  public double Consumptiom { get; set; }
+
+  public double ConversionCoefficient { get; set; } = 1;
+
+  public double EventSystemValue { get; set; } = 0;
+
+  public double EventNotSystemValue { get; set; } = 0;
+
+  public double EventImpulseValue { get; set; } = 0;
+
+  public DateTime? EventDatetime { get; set; }
+
+  public int? EventCount { get; set; }
+
+  public int? EventErrorCount { get; set; }
+
+  public bool? IsSpecialControl { get; set; }
+
+  public bool IsOnline { get; set; }
+
+  public string? State { get; set; }
+
+  public DateTime CreatedAt { get; set; }
+
+  public DateTime UpdatedAt { get; set; }
+
+  public virtual Device Device { get; set; } = null!;
+
+  public virtual ICollection<History> Histories { get; set; } = new List<History>();
+
+  public virtual Room Room { get; set; } = null!;
+
+  public virtual Server Server { get; set; } = null!;
+
+  public virtual Service Service { get; set; } = null!;
+
+  [NotMapped]
+  public Packages? Packages { get; set; }
+  [NotMapped]
+  public ComPort Port { get; private set; } = new ComPort();
+  [NotMapped]
+  public byte[] ChannelBuffer { get; set; } = new byte[0];
+  [NotMapped]
+  public int? DeviceType { get; set; }
+  [NotMapped]
+  public int ErrorCountLimit { get; private set; }
+  [NotMapped]
+  public int DeadPollingTime { get; set; }
+  public void Initialization()
   {
-    private int _id;
+    this.Packages = PackageHelper.GetPackages((byte)this.ChannelId);
+    this.EventCount = 0;
+    this.EventErrorCount = 0;
+    this.EventDatetime = EventDatetime = DateTime.UtcNow;
+    this.ErrorCountLimit = AppSettings.AppGeneralSettings.ChannelPollingErrorCountLimit;
+    this.DeadPollingTime = AppSettings.AppPortSettings.DeadPollingTime;
+  }
 
-    [Key, Column("id")]
-    public int Id
+  public void SendMessage(byte[] message)
+  {
+    ComPortHelper.SendMessage(this.Port, message);
+  }
+
+  public void ReceiveMessage()
+  {
+    ChannelBuffer = ComPortHelper.ReadMessage(this.Port);
+  }
+
+  public void SetEventCount(bool isSaved)
+  {
+    if (isSaved)
     {
-      get { return _id; }
-      set { _id = value; Initialization(); System.Console.WriteLine("CALLED!!!"); }
+      this.EventCount++;
+      this.EventErrorCount = 0;
     }
-    [Column("channel_id")]
-    public int ChannelId { get; set; }
-    [Column("server_id")]
-    public int ServerId { get; set; }
-    [Column("name_controlpoint")]
-    public string? ChannelName { get; set; }
-    [Column("on_off")]
-    public int ChannelPowerState { get; set; }
-    [Column("state_for_threeview")]
-    public int ChannelState { get; set; }
-    [Column("consumption")]
-    public double ChannelConsumption { get; set; }
-    [Column("special_control")]
-    public bool ChannelSpecialControl { get; set; }
+    else
+      this.EventErrorCount++;
+  }
 
-    [Column("name_db")]
-    public string? DeviceName { get; set; }
-    [Column("type")]
-    public int DeviceType { get; set; }
-    [Column("min_nuclid_value")]
-    public double DeviceCalibrateMin { get; set; }
-    [Column("max_nuclid_value")]
-    public double DeviceCalibrateMax { get; set; }
-    [Column("background")]
-    public double DeviceSelfBackground { get; set; }
-    [Column("name_location")]
-    public string? DeviceLocation { get; set; }
-
-    [Column("event_date")]
-    public DateTime EventDateTime { get; set; }
-    [Column("event_value")]
-    public double SystemEventValue { get; set; }
-    [Column("unit")]
-    public string? Unit { get; set; }
-    [NotMapped]
-    public double NotSystemEventValue { get; set; }
-    [Column("value_impulses")]
-    public double ImpulsesEventValue { get; set; }
-
-
-    [Column("coefficient")]
-    public double ConvertCoefficient { get; set; } = 1;
-    [Column("pre_accident")]
-    public double PreEmgLimit { get; set; }
-    [Column("accident")]
-    public double EmgLimit { get; set; }
-    [Column("count")]
-    public int EventCount { get; set; }
-    [Column("error_count")]
-    public int ErrorEventCount { get; set; }
-    public List<History> Histories { get; set; }
-
-    [NotMapped]
-    public Packages? Packages { get; set; }
-    [NotMapped]
-    public ComPort Port { get; private set; } = new ComPort();
-    [NotMapped]
-    public byte[] ChannelBuffer { get; set; } = new byte[0];
-
-    public void Initialization()
+  /// <summary>
+  /// Get string statements for channel following measurement values
+  /// </summary>
+  /// <param name="channel">Channel object</param>
+  /// <returns>String state value</returns>
+  public string SetChannelStatus()
+  {
+    if (this.IsOnline)
     {
-      this.Packages = PackageHelper.GetPackages((byte)this.ChannelId);
-      this.EventCount = 0;
-      this.ErrorEventCount = 0;
-      this.EventDateTime = EventDateTime = DateTime.UtcNow;
-    }
-
-    public void SendMessage(byte[] message)
-    {
-      ComPortHelper.SendMessage(this.Port, message);
-    }
-
-    public void ReceiveMessage()
-    {
-      ChannelBuffer = ComPortHelper.ReadMessage(this.Port);
-    }
-
-    public void SetEventCount(bool isSaved)
-    {
-      switch (isSaved)
+      if (this.EventErrorCount < ErrorCountLimit)
       {
-        case true:
-          this.EventCount++;
-          this.ErrorEventCount = 0;
-          break;
-        case false:
-          this.ErrorEventCount++;
-          break;
+        if (this.EventSystemValue < this.PreEmergencyLimit)
+          return ChannelState.Normal;
+        else if (this.EventSystemValue >= this.PreEmergencyLimit && this.EventSystemValue < EmergencyLimit)
+          return ChannelState.Warning;
+        else
+          return ChannelState.Danger;
       }
-    }
-
-    public bool SaveEventValue()
-    {
-      if (this.ChannelBuffer.SequenceEqual(new byte[] { Bytes.CRC_ERROR })
-          || this.ChannelBuffer.SequenceEqual(new byte[] { Bytes.SEZE_ERROR }))
-        return false;
-
-      var impulses = UnitConverterHelper.ToImpulse(this.ChannelBuffer);
-
-      if (this.ImpulsesEventValue == impulses)
-        return false;
       else
       {
-        this.ImpulsesEventValue = impulses;
-
-        this.SystemEventValue = UnitConverterHelper.ToSystem(this.DeviceType,
-                                                             this.ConvertCoefficient,
-                                                             this.ImpulsesEventValue);
-        this.NotSystemEventValue = UnitConverterHelper.ToNotSystem(this.DeviceType,
-                                                                   this.SystemEventValue);
-
-        EventDateTime = DateTime.UtcNow;
-
-        return true;
+        return ChannelState.LineDown;
       }
     }
-
-    public void StartOneshotDialogSession()
+    else
     {
-      this.Port.Open();
-      this.SendMessage(this.Packages.Fetch);
-      Thread.Sleep(100);
-      this.ReceiveMessage();
-      var isSaved = this.SaveEventValue();
-      SetEventCount(isSaved);
+      return ChannelState.Offline;
+    }
+  }
+  public bool SaveEventValue()
+  {
+    if (this.ChannelBuffer.SequenceEqual(new byte[] { Bytes.CRC_ERROR })
+        || this.ChannelBuffer.SequenceEqual(new byte[] { Bytes.SEZE_ERROR }))
+      return false;
 
-      if (isSaved)
-      {
-        Thread.Sleep(100);
-        this.SetLightAlert();
-      }
+    var impulses = UnitConverterHelper.ToImpulse(this.ChannelBuffer);
 
-      this.PrintChannelInfo();
-      Thread.Sleep(2300);
-      this.Port.Close();
+    if (this.EventImpulseValue == impulses)
+      return false;
+    else
+    {
+      this.EventImpulseValue = impulses;
+
+      this.EventSystemValue = UnitConverterHelper.ToSystem(this.DeviceType,
+                                                           this.ConversionCoefficient,
+                                                           this.EventImpulseValue);
+      this.EventNotSystemValue = UnitConverterHelper.ToNotSystem(this.DeviceType,
+                                                                 this.EventSystemValue);
+
+      this.EventDatetime = DateTime.UtcNow;
+      this.UpdatedAt = DateTime.UtcNow;
+
+      return true;
+    }
+  }
+
+  public void StartOneshotDialogSession()
+  {
+    this.Port.Open();
+    this.SendMessage(this.Packages.Fetch);
+    Thread.Sleep(DeadPollingTime);
+    this.ReceiveMessage();
+    var isSaved = this.SaveEventValue();
+    SetEventCount(isSaved);
+
+    this.State = SetChannelStatus();
+
+    if (isSaved)
+    {
+      Thread.Sleep(DeadPollingTime);
+      this.SetLightAlert();
     }
 
-    public void SetLightAlert()
-    {
-      if (this.ChannelPowerState == PowerState.Off)
-        return;
+    this.PrintChannelInfo();
+    this.Port.Close();
+  }
 
-      if (this.SystemEventValue < this.PreEmgLimit)
-      {
-        this.ChannelState = AlertColors.Green;
+  public void SetLightAlert()
+  {
+    if (this.IsOnline == PowerState.Off || this.State == ChannelState.LineDown)
+      return;
+
+    switch (this.State)
+    {
+      case ChannelState.Normal:
         SendMessage(this.Packages.LightAlert.Normal);
-        return;
-      }
-      else if (this.SystemEventValue >= this.PreEmgLimit && this.SystemEventValue < this.EmgLimit)
-      {
-        this.ChannelState = AlertColors.Yellow;
+        break;
+      case ChannelState.Warning:
         SendMessage(this.Packages.LightAlert.Warning);
-        return;
-      }
-      else
-      {
-        this.ChannelState = AlertColors.Red;
-        switch (this.ChannelSpecialControl)
+        break;
+      case ChannelState.Danger:
+        switch (this.IsSpecialControl)
         {
           case false:
             SendMessage(this.Packages.LightAlert.Danger);
@@ -182,18 +206,21 @@ namespace ArmstrongServer.Models
             SendMessage(this.Packages.LightAlert.SpecialSignal);
             return;
         }
-      }
-    }
+        break;
 
-    public void PrintChannelInfo()
-    {
-      System.Console.WriteLine($"Name: {this.ChannelName}\t" +
-                              $"Impulses: {this.ImpulsesEventValue}\t" +
-                              $"System: {this.SystemEventValue.ToString("E3")}\t" +
-                              $"NotSyste: {this.NotSystemEventValue.ToString("E3")}\t" +
-                              $"Date: {this.EventDateTime}\t" +
-                              $"Count: {this.EventCount}\t" +
-                              $"Error: {this.ErrorEventCount}");
     }
+  }
+
+  public void PrintChannelInfo()
+  {
+    System.Console.WriteLine($"Id: {this.ChannelId}\t" +
+                            $"Name: {this.Name}\t" +
+                            $"Impulses: {this.EventImpulseValue}\t" +
+                            $"System: {this.EventSystemValue:E3}\t" +
+                            $"NotSyste: {this.EventNotSystemValue:E3}\t" +
+                            $"Date: {this.EventDatetime}\t" +
+                            $"Count: {this.EventCount}\t" +
+                            $"Error: {this.EventErrorCount}\t" +
+                            $"State: {this.State}");
   }
 }

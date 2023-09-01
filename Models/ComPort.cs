@@ -8,12 +8,8 @@ namespace ArmstrongServer.Models
   {
     public ComPort()
     {
-      var config = SettingsHelper.GetConfiguration();
-      var portConfig = config.GetSection("PortSettings")
-                             .Get<PortSetting>();
-
-      PortName = portConfig.PortName;
-      BaudRate = portConfig.BaudRate;
+      PortName = AppSettings.AppPortSettings.PortName;
+      BaudRate = AppSettings.AppPortSettings.BaudRate;
     }
   }
 }

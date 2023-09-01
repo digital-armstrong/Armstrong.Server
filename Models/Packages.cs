@@ -8,7 +8,7 @@ namespace ArmstrongServer.Models
     public byte[]? GetMode { get; set; }
   }
 
-  public class Service
+  public class Operation
   {
     public byte[]? OpenBlanker { get; set; }
     public byte[]? CloseBlanker { get; set; }
@@ -29,7 +29,7 @@ namespace ArmstrongServer.Models
   {
     public byte[]? Fetch { get; set; }
     public WorkMode? WorkMode { get; set; }
-    public Service? Service { get; set; }
+    public Operation? Operation { get; set; }
     public LightAlert? LightAlert { get; set; }
     public byte[]? SetAddress { get; set; }
   }
