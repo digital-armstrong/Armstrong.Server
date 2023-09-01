@@ -15,7 +15,7 @@ namespace ArmstrongServer.Helpers
         GetMode = GeneratePackage(address, Bytes.WorkMode.Function, Bytes.WorkMode.Mode.GetMode),
       };
 
-      var service = new Service
+      var operation = new Operation
       {
         OpenBlanker = GeneratePackage(address, Bytes.Service.Function, Bytes.Service.Action.Write, Bytes.Service.Operation.OpenBlanker),
         CloseBlanker = GeneratePackage(address, Bytes.Service.Function, Bytes.Service.Action.Write, Bytes.Service.Operation.CloseBlanker),
@@ -37,7 +37,7 @@ namespace ArmstrongServer.Helpers
       {
         Fetch = GeneratePackage(address, Bytes.Fetch.Function),
         WorkMode = workMode,
-        Service = service,
+        Operation = operation,
         LightAlert = lightAlert,
       };
 

@@ -1,6 +1,6 @@
 namespace ArmstrongServer.Models
 {
-  class SqlConnectionSettings
+  public class SqlConnectionSettings
   {
     public string? Host { get; set; }
     public string? Username { get; set; }

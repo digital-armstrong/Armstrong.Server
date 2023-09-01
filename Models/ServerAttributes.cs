@@ -2,7 +2,7 @@ using System.Net;
 
 namespace ArmstrongServer.Models
 {
-  class ServerAttributes
+  public class ServerAttributes
   {
     public int Id { get; set; }
     public string? Name { get; set; }

@@ -25,7 +25,7 @@ namespace ArmstrongServer.Helpers
       }
     }
 
-    static public double ToSystem(int type, double coefficient, double impulse)
+    static public double ToSystem(int? type, double coefficient, double impulse)
     {
       //BDMG coefficient = 1, BDGB coefficient = 0.0000019f, BDAS coefficient = 2.0592f;
 
@@ -43,7 +43,7 @@ namespace ArmstrongServer.Helpers
       }
     }
 
-    static public double ToNotSystem(int type, double value)
+    static public double ToNotSystem(int? type, double value)
     {
       // Пересчет из мкЗв/ч в мкР/с и Бк/м.куб в Ки/л
       // 1 мкЗв/ч     = 27.777        мкР/с
@@ -56,7 +56,7 @@ namespace ArmstrongServer.Helpers
       {
         case (int)Type.EqualDoseRate: return value * roentgen;                // type: 1  БДМГ    мкЗв/ч
         case (int)Type.GasesActivity: return value / curie;                   // type: 2  БДГБ    Бк/м³
-        case (int)Type.AerosolsActivity: return value / curie;                   // type: 3  БДАС    Бк/м³
+        case (int)Type.AerosolsActivity: return value / curie;                // type: 3  БДАС    Бк/м³
         default: return value;
       }
     }
