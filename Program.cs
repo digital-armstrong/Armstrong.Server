@@ -26,12 +26,6 @@ namespace ArmstrongServer
         ? (int)(AppSettings.AppGeneralSettings.ChannelPolingTimeout - summPollingPortOverhead)
         : AppSettings.AppPortSettings.MinimalPollingTimeout;
 
-      foreach (Channel ch in channels)
-      {
-        ch.Initialization();
-        ch.DeviceType = ch.Device.DeviceModel.MeasurementClass.ArmsDeviceType; // It's really wrong choice
-      }
-
       while (true)
       {
         foreach (var c in channels)
