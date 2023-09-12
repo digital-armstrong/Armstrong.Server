@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using ArmstrongServer.Models;
+using ArmstrongServer.Models.ConfigModels;
+using ArmstrongServer.Models.DataModels;
 
 namespace ArmstrongServer.Data;
 
