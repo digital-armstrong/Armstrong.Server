@@ -15,7 +15,7 @@ interface IServer<TDataContext> where TDataContext : class
   public IOrderedQueryable<Channel> Channels { get; set; }
   public IOrderedQueryable<History> Histories { get; set; }
 
-  public void Start();
+  public void Start(CancellationToken cancellationToken);
   public void Stop();
   public void Update();
 }

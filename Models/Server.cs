@@ -38,7 +38,7 @@ namespace ArmstrongServer.Models
         channel.Initialization(serverProps);
     }
 
-    public void Start()
+    public void Start(CancellationToken cancellationToken)
     {
       _isPolling = true;
       Console.WriteLine($"Thread for Server {ServerId} started.");
@@ -75,13 +75,15 @@ namespace ArmstrongServer.Models
         }
 
         DataContext.SaveChanges();
-        Thread.Sleep(realPollingTimeout);
+        Task.Delay(realPollingTimeout).Wait();
 
-        Console.WriteLine($"Server {ServerId} -- Work");
-        Task.Delay(1000).Wait(); // Пауза между опросами
+        if (cancellationToken.IsCancellationRequested)
+          Stop();
+        else
+          Console.WriteLine($"Server {ServerId}\tWork");
       }
 
-      Console.WriteLine($"Server {ServerId} -- Reload");
+      Console.WriteLine($"Server {ServerId}\tStopped");
     }
 
     public void Stop()

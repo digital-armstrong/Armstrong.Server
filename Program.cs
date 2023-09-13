@@ -11,31 +11,28 @@ namespace ArmstrongServer
     {
       Initialization();
 
-      var serverThreads = new List<Thread>();
+      var cancellationTokenSource = new CancellationTokenSource();
+      CancellationToken cancellationToken = cancellationTokenSource.Token;
+
+      var serverTasks = new List<Task>();
 
       foreach (var server in Servers)
       {
-        var thread = new Thread(() => server.Start());
-        serverThreads.Add(thread);
-        thread.Start();
+        var task = Task.Run(() => server.Start(cancellationToken), cancellationToken);
+        serverTasks.Add(task);
       }
 
-      Console.WriteLine("Starting server threads...");
+      Console.WriteLine("Starting server tasks...");
 
-      Console.WriteLine("Press Enter to exit.");
+      Console.WriteLine("Press Enter to abort polling.");
       Console.ReadLine();
 
-      Console.WriteLine("Stopping server threads...");
+      Console.WriteLine("Stopping server tasks...");
 
-      // this is not supported by the netcore 6, use concellationToken
-      foreach (var thread in serverThreads)
-      {
-        thread.Abort();
-      }
+      cancellationTokenSource.Cancel();
+      await Task.WhenAll(serverTasks);
 
-      await Task.WhenAll(serverThreads.Select(thread => Task.Run(() => thread.Join())).ToArray());
-
-      Console.WriteLine("All server threads have completed.");
+      Console.WriteLine("All server tasks have completed.");
     }
 
     public static void Initialization()

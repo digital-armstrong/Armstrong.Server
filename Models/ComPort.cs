@@ -7,7 +7,7 @@ namespace ArmstrongServer.Models
   {
     public ComPort(ServerProps serverProps)
     {
-      PortName = serverProps.ComPortName;
+      PortName = serverProps is null ? throw new ArgumentNullException("serverProps") : serverProps.ComPortName;
       BaudRate = serverProps.ComPortBaudRate;
     }
   }
