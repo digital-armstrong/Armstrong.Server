@@ -1,4 +1,4 @@
-using ArmstrongServer.Models.DataModels;
+﻿using ArmstrongServer.Models.DataModels;
 using ArmstrongServer.Models.ConfigModels;
 using ArmstrongServer.Data;
 using Microsoft.EntityFrameworkCore;
@@ -35,7 +35,13 @@ namespace ArmstrongServer.Models
         .OrderBy(x => x.ChannelId);
 
       foreach (var channel in Channels)
+      {
         channel.Initialization(serverProps);
+
+        // TODO: Remove this when we have a better solution
+        channel.DeviceType = channel.Device.DeviceModel.MeasurementClass.ArmsDeviceType;
+
+      }
     }
 
     public void Start(CancellationToken cancellationToken)
