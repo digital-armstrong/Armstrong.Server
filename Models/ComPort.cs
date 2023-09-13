@@ -1,15 +1,14 @@
 using System.IO.Ports;
-using ArmstrongServer.Helpers;
-using Microsoft.Extensions.Configuration;
+using ArmstrongServer.Models.ConfigModels;
 
 namespace ArmstrongServer.Models
 {
   public class ComPort : SerialPort
   {
-    public ComPort()
+    public ComPort(ServerProps serverProps)
     {
-      PortName = AppSettings.AppPortSettings.PortName;
-      BaudRate = AppSettings.AppPortSettings.BaudRate;
+      PortName = serverProps is null ? throw new ArgumentNullException("serverProps") : serverProps.ComPortName;
+      BaudRate = serverProps.ComPortBaudRate;
     }
   }
 }

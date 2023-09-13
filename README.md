@@ -34,3 +34,46 @@ docker run -d --privileged --restart unless-stopped armstrongserver
    docker ps #=> получаем имя контейнера
    docker stop <id>
    ```
+
+## Запуск контейнера в docker-compose
+
+Если ваша база данных запущена в другом контейнере, например, у вас несколько контейнеров на локальной машине запущено отдельно, вы можете
+подключить контейнер с сервером в `docker network`, в которой крутится docker-compose web-приложения с базой данных, например, и подключаться
+по docker DNS или же просто по имени контейнера базы данных:
+
+Смотрим название сети:
+
+```bash
+docker network ls
+```
+
+У меня, например, это будет `armstrongweb_default`, в docker-compose прокинем эту сеть:
+
+```yaml
+services:
+  server:
+    ...
+    networks:
+      - armstrongweb_default
+  ...
+
+networks:
+  armstrongweb_default:
+    external: true
+```
+
+### Избавляемся от ошибки доступа до последовательных портов
+
+По умолчанию из соображения безопасности docker, как уже говорилось ранее, не может достучаться до `/dev/ttyUSB`, исправим эту проблему
+без предоставления административного доступа. Для этого просто прокинем в docker-compose.yml наши устройства:
+
+```yaml
+services:
+  server:
+    ...
+    devices:
+      - /dev/ttyUSB0:/dev/ttyUSB0
+      - /dev/ttyUSB1:/dev/ttyUSB1
+```
+
+И так нужно будет делать с каждым добавляемым ОВЕН-АС4. Добавили кусок в конфигурацию - добавили имя порта в секцию devices.

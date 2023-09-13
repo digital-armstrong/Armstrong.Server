@@ -1,8 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using ArmstrongServer.Constants;
 using ArmstrongServer.Helpers;
+using ArmstrongServer.Models.ConfigModels;
+using ArmstrongServer.Models;
 
-namespace ArmstrongServer.Models;
+namespace ArmstrongServer.Models.DataModels;
 
 public partial class Channel
 {
@@ -67,7 +69,7 @@ public partial class Channel
   [NotMapped]
   public Packages? Packages { get; set; }
   [NotMapped]
-  public ComPort Port { get; private set; } = new ComPort();
+  public ComPort Port { get; private set; }
   [NotMapped]
   public byte[] ChannelBuffer { get; set; } = new byte[0];
   [NotMapped]
@@ -76,14 +78,16 @@ public partial class Channel
   public int ErrorCountLimit { get; private set; }
   [NotMapped]
   public int DeadPollingTime { get; set; }
-  public void Initialization()
+
+  public void Initialization(ServerProps serverProp)
   {
     this.Packages = PackageHelper.GetPackages((byte)this.ChannelId);
     this.EventCount = 0;
     this.EventErrorCount = 0;
     this.EventDatetime = EventDatetime = DateTime.UtcNow;
     this.ErrorCountLimit = AppSettings.AppGeneralSettings.ChannelPollingErrorCountLimit;
-    this.DeadPollingTime = AppSettings.AppPortSettings.DeadPollingTime;
+    this.DeadPollingTime = serverProp.DeadPollingTime;
+    this.Port = new ComPort(serverProp);
   }
 
   public void SendMessage(byte[] message)

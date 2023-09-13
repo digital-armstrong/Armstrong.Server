@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace ArmstrongServer.Models;
+namespace ArmstrongServer.Models.DataModels;
 
 public partial class History
 {
