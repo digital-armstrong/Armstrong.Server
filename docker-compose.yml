@@ -1,0 +1,15 @@
+version: '3'
+services:
+  server:
+    image: armstrongserver:latest
+    stdin_open: true
+    networks:
+      - armstrongweb_default
+    devices:
+      - /dev/ttyUSB0:/dev/ttyUSB0
+      - /dev/ttyUSB1:/dev/ttyUSB1
+
+networks:
+  armstrongweb_default:
+    external: true
+

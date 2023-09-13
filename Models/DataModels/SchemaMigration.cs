@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace ArmstrongServer.Models;
+namespace ArmstrongServer.Models.DataModels;
 
 public partial class SchemaMigration
 {
-    public string Version { get; set; } = null!;
+  public string Version { get; set; } = null!;
 }

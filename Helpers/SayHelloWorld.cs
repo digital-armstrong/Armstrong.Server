@@ -1,4 +1,5 @@
 using ArmstrongServer.Models;
+using ArmstrongServer.Models.ConfigModels;
 
 namespace ArmstrongServer.Helpers
 {
@@ -9,11 +10,7 @@ namespace ArmstrongServer.Helpers
       System.Console.WriteLine(Constants.TextConstants.Licence);
       System.Console.WriteLine(Constants.TextConstants.GreetingsIntro);
 
-      System.Console.WriteLine($"\tMy ID: {AppSettings.AppServerAttributes.Id}");
-      System.Console.WriteLine($"\tMy Name: {AppSettings.AppServerAttributes.Name}");
-
-      foreach (var ip in AppSettings.AppServerAttributes.IPAddress)
-        System.Console.WriteLine($"\tIP Address: {ip.ToString()}");
+      System.Console.WriteLine($"\tServers count: {AppSettings.AppGeneralSettings.ServerProps.Count}");
 
       System.Console.WriteLine(Constants.TextConstants.GreetingsBody);
       System.Console.WriteLine(Constants.TextConstants.GreetingsOutro);

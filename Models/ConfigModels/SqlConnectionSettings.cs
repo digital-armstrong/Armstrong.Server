@@ -1,4 +1,4 @@
-namespace ArmstrongServer.Models
+namespace ArmstrongServer.Models.ConfigModels
 {
   public class SqlConnectionSettings
   {
