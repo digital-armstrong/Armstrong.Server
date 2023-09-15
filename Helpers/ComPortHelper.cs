@@ -35,10 +35,16 @@ namespace ArmstrongServer.Helpers
       }
 
       if (VerifivationPackageHelper.IsVerified(buffer))
+      {
+        port.DiscardInBuffer();
+        port.DiscardOutBuffer();
         return buffer;
+      }
       else
       {
         System.Console.WriteLine("CRC ERROR");
+        port.DiscardInBuffer();
+        port.DiscardOutBuffer();
         return new byte[] { Bytes.CRC_ERROR };
       }
     }
