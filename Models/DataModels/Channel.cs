@@ -84,7 +84,6 @@ public partial class Channel
     this.Packages = PackageHelper.GetPackages((byte)this.ChannelId);
     this.EventCount = 0;
     this.EventErrorCount = 0;
-    this.EventDatetime = EventDatetime = DateTime.UtcNow;
     this.ErrorCountLimit = AppSettings.AppGeneralSettings.ChannelPollingErrorCountLimit;
     this.DeadPollingTime = serverProp.DeadPollingTime;
     this.Port = new ComPort(serverProp);

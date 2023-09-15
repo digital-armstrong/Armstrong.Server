@@ -6,6 +6,11 @@ namespace ArmstrongServer.Helpers
 {
   public static class ComPortHelper
   {
+    private static void DiscardBuffer(ComPort port)
+    {
+      port.DiscardInBuffer();
+      port.DiscardOutBuffer();
+    }
     public static void SendMessage(ComPort port, byte[] message)
     {
       if (!port.IsOpen)
@@ -36,15 +41,13 @@ namespace ArmstrongServer.Helpers
 
       if (VerifivationPackageHelper.IsVerified(buffer))
       {
-        port.DiscardInBuffer();
-        port.DiscardOutBuffer();
+        DiscardBuffer(port);
         return buffer;
       }
       else
       {
         System.Console.WriteLine("CRC ERROR");
-        port.DiscardInBuffer();
-        port.DiscardOutBuffer();
+        DiscardBuffer(port);
         return new byte[] { Bytes.CRC_ERROR };
       }
     }
