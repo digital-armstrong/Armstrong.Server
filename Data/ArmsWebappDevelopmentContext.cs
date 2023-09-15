@@ -344,6 +344,8 @@ public partial class ArmsWebappDevelopmentContext : DbContext
       entity.Property(e => e.MeasurementGroupId).HasColumnName("measurement_group_id");
       entity.Property(e => e.MeasurementMax).HasColumnName("measurement_max");
       entity.Property(e => e.MeasurementMin).HasColumnName("measurement_min");
+      entity.Property(e => e.CalibrationMin).HasColumnName("calibration_min");
+      entity.Property(e => e.CalibrationMax).HasColumnName("calibration_max");
       entity.Property(e => e.MeasurementSensitivity).HasColumnName("measurement_sensitivity");
       entity.Property(e => e.MeasuringUnit)
               .HasColumnType("character varying")

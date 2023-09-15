@@ -25,6 +25,10 @@ public partial class DeviceModel
 
   public double? MeasurementMax { get; set; }
 
+  public double? CalibrationMin { get; set; }
+
+  public double? CalibrationMax { get; set; }
+
   public long ManufacturerId { get; set; }
 
   public bool? IsCompleteDevice { get; set; }
