@@ -8,7 +8,7 @@ namespace ArmstrongServer.Helpers
     {
       var builder = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json", false);
+            .AddJsonFile(AppDomain.CurrentDomain.BaseDirectory + "appsettings.json", false);
       var configuration = builder.Build();
 
       return configuration;
